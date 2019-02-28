@@ -15,15 +15,15 @@ class Comment(BaseModel):
 
         if comment:
             self.comment = comment['comment']
-            self.user_id = comment['user_id']
-            self.post_id = comment['post_id']
+            self.user_id = comment['authorId']
+            self.post_id = comment['postId']
 
 
     def save_comment(self):
         """ This method saves a comment """
 
         comment_item = dict(
-            userId=self.user_id,
+            user_id=self.user_id,
             post_id=self.post_id,
             comment=self.comment
         )

@@ -25,6 +25,7 @@ def get():
         "users": users_list
     }), 200)
 
+
 """ This route allows unregistered users to sign up """
 @v1.route("/auth/signup", methods=['POST'])
 def registration():
