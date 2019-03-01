@@ -6,6 +6,7 @@ from instance.config import app_config
 from app.database import InitializeDb
 
 def create_app(config_name='development', db_url=os.getenv('FLASK_DATABASE_URI')):
+
     app = Flask(__name__)
     CORS(app)
     app.config.from_object(app_config[config_name])

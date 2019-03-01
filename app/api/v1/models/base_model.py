@@ -15,7 +15,8 @@ class BaseModel:
     """ This class defines all the methods reusable in all the models """
 
     def __init__(self, table_name='', database=os.getenv('FLASK_DATABASE_URI')):
-
+        # if os.getenv('APP_SETTINGS') == 'testing':
+        app = Flask(__name__)
         self.table_name = table_name
         self.database = InitializeDb(database)
 

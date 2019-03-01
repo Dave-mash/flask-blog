@@ -8,6 +8,7 @@ from flask import Blueprint
 from flask import request, jsonify, make_response, Blueprint
 
 from app.api.v1.models.posts import Post
+from app.api.v1.utils.comments_validator import CommentsValidator
 from app.api.v1.models.comments import Comment, AuthenticationRequired
 from app.api.v1.models.users import User
 
@@ -23,10 +24,20 @@ def comment_on_post(postId, userId):
     try:
         data['comment']
     except:
-        return jsonify({
-            "error": 'You missed the {} key, value pair'.format(data['comment'])
-        })
+        return make_response(jsonify({
+            "error": 'You missed the comment key',
+            "status": 400
+        }), 400)
+
+    comment = CommentsValidator(data['comment'])
         
+    if comment.valid_comment():
+        return make_response(jsonify({
+            "error": comment.valid_comment(),
+            "status": 422
+        }), 422)
+
+    
     post = Post().fetch_specific_post('id', f"id = {postId}")
     user = User().fetch_specific_user('id', f"id = {userId}")
 

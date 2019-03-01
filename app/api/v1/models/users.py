@@ -11,9 +11,9 @@ from app.api.v1.models.base_model import BaseModel, AuthenticationRequired
 
 class User(BaseModel):
     
-    def __init__(self, user={}, database=os.getenv('FLASK_DATABASE_URI')):
+    def __init__(self, user={}):
 
-        self.base_model = BaseModel('users', database)
+        self.base_model = BaseModel(table_name='users')
 
         if user:
             self.Fname = user['first_name']
