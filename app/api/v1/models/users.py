@@ -21,6 +21,7 @@ class User(BaseModel):
             self.email = user['email']
             self.username = user['username']
             self.password = generate_password_hash(user['password'])
+            self.image = user['image'] if user['image'] else '{user.png}'
             self.isAdmin = False
       
       
@@ -32,7 +33,8 @@ class User(BaseModel):
             last_name=self.Lname,
             email=self.email,
             username=self.username,
-            password=self.password
+            password=self.password,
+            image=self.image
         )
 
         keys = ", ".join(user.keys())
@@ -107,12 +109,15 @@ class User(BaseModel):
     def update_user(self, id, updates):
         """ This method defines the update query """
 
+        image = updates['image'] if updates['image'] else '{user.png}'
+
         pairs_dict = {
             "first_name": f"first_name = '{updates['first_name']}'",
             "last_name": f"last_name = '{updates['last_name']}'",
             "email": f"email = '{updates['email']}'",
             "username": f"username = '{updates['username']}'",
-            "password": f"password = '{generate_password_hash(updates['password'])}'"
+            "password": f"password = '{generate_password_hash(updates['password'])}'",
+            "image": f"image = '{image}'"
         }
         
         pairs = ", ".join(pairs_dict.values())

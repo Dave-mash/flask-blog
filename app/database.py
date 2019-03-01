@@ -25,6 +25,7 @@ class InitializeDb:
                 email TEXT UNIQUE NOT NULL,
                 username TEXT UNIQUE NOT NULL,
                 password TEXT NOT NULL,
+                image VARCHAR [],
                 date_registered TIMESTAMP DEFAULT current_timestamp
             );
             CREATE TABLE IF NOT EXISTS posts(
@@ -77,6 +78,7 @@ class InitializeDb:
         print(query)
         self.cursor.execute(query)
         self.connection.commit()
+
 
     def drop_tables(self):
         """ This method drops all tables """

@@ -74,44 +74,57 @@ def edit_comment(userId, commentId):
         return jsonify({
             "error": 'You missed the {} key, value pair'.format(data['comment'])
         })
-     
-    if Comment().fetch_specific_comment('user_id', f"id = {commentId}")[0] == userId:
-        
-        comment = Comment().update_comment(commentId, data)
-        
-        if isinstance(comment, dict):
-            return make_response(comment, 404)
+
+    try:
+        Comment().fetch_specific_comment('user_id', f"id = {commentId}")[0]  
+        if Comment().fetch_specific_comment('user_id', f"id = {commentId}")[0] == userId:
+            
+            comment = Comment().update_comment(commentId, data)
+            
+            if isinstance(comment, dict):
+                return make_response(comment, 404)
+            else:
+                return make_response(jsonify({
+                    "message": "You have successfully updated this comment",
+                    "status": 200
+                }), 200)
         else:
             return make_response(jsonify({
-                "message": "You have successfully updated this comment",
-                "status": 200
-            }), 200)
-    else:
+                "error": "You are not authorized to perform this action!",
+                "status": 401
+            }), 401)
+    except:
         return make_response(jsonify({
-            "error": "You are not authorized to perform this action!",
-            "status": 401
-        }), 401)
-        
+            "error": "Comment not found or does not exist!",
+            "status": 404
+        }), 404)    
 
 """ This route deletes a comment """
 @v1.route("/<int:userId>/comments/<int:commentId>", methods=['DELETE'])
 @AuthenticationRequired
 def delete_comment(userId, commentId):
 
-    if Comment().fetch_specific_comment('user_id', f"id = {commentId}")[0] == userId:
-        
-        comment = Comment().delete_comment(commentId)
+    try:
+        Comment().fetch_specific_comment('user_id', f"id = {commentId}")[0] 
+        if Comment().fetch_specific_comment('user_id', f"id = {commentId}")[0] == userId:
+            
+            comment = Comment().delete_comment(commentId)
 
-        if isinstance(comment, dict):
-            return make_response(jsonify(comment), 404)
+            if isinstance(comment, dict):
+                return make_response(jsonify(comment), 404)
+            else:
+                return make_response(jsonify({
+                    "error": 'comment was deleted successfully',
+                    "status": 200
+                }), 200)
         else:
             return make_response(jsonify({
-                "error": 'comment was deleted successfully',
-                "status": 200
-            }), 200)
-    else:
+                "error": "You are not authorized to perform this action!",
+                "status": 401
+            }), 401)
+    except:
         return make_response(jsonify({
-            "error": "You are not authorized to perform this action!",
-            "status": 401
-        }), 401)
+            "error": "Comment not found or does not exist",
+            "status": 404
+        }), 404)
 

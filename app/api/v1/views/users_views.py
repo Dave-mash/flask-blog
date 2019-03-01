@@ -53,6 +53,7 @@ def registration():
         "last_name": data['last_name'],
         "email": data['email'],
         "username": data['username'],
+        "image": data['image'],
         "password": data['password']
     }
 
@@ -145,7 +146,8 @@ def update_account(userId):
         "last_name": data['last_name'],
         "email": data['email'],
         "username": data['username'],
-        "password": data['password']
+        "password": data['password'],
+        "image": data['image']
     }    
 
     update_user = User().update_user(userId, user_data)
