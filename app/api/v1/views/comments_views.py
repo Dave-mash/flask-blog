@@ -40,7 +40,13 @@ def comment_on_post(postId, userId):
     
     post = Post().fetch_specific_post('id', f"id = {postId}")
     user = User().fetch_specific_user('id', f"id = {userId}")
-
+    
+    if not post:
+        return make_response(jsonify({
+            "error": "post not found or does not exist",
+            "status": 404
+        }), 404)
+    
     if user:
     
         comment = {
@@ -61,11 +67,6 @@ def comment_on_post(postId, userId):
                 "comment": comment['comment']
             }]
         }), 201)
-    elif not post:
-        return make_response(jsonify({
-            "error": "post not found or does not exist",
-            "status": 404
-        }), 404)
     elif not user:
         return make_response(jsonify({
             "error": "User not found or does not exist",

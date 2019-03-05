@@ -5,8 +5,10 @@ from flask_cors import CORS
 from instance.config import app_config
 from app.database import InitializeDb
 
-def create_app(config_name='development', db_url=os.getenv('FLASK_DATABASE_URI')):
+db_url = None
 
+def create_app(config_name='development'):
+    
     app = Flask(__name__)
     CORS(app)
     app.config.from_object(app_config[config_name])
@@ -19,8 +21,16 @@ def create_app(config_name='development', db_url=os.getenv('FLASK_DATABASE_URI')
     app.register_blueprint(user_v1)
     app.register_blueprint(post_v1)
     app.register_blueprint(comment_v1)
+    
+    if config_name == 'development':
+        db_url = 'FLASK_DATABASE_URI'
+    elif config_name == 'testing':
+        db_url = 'TEST_DATABASE_URI'
 
     db = InitializeDb(db_url)
-    db.create_tables()
 
-    return app, db
+    db.create_tables()
+    db.connection.commit()
+    # db.connection.close()
+
+    return app

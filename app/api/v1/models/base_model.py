@@ -8,24 +8,21 @@ import datetime
 from functools import wraps, update_wrapper
 from flask import jsonify, request
 
-from app import create_app
+from app import create_app, db_url
 from app.database import InitializeDb
 
-class BaseModel:
+class BaseModel(InitializeDb):
     """ This class defines all the methods reusable in all the models """
 
-    def __init__(self, table_name='', database=os.getenv('FLASK_DATABASE_URI')):
-        # if os.getenv('APP_SETTINGS') == 'testing':
-        app = Flask(__name__)
-        self.table_name = table_name
-        self.database = InitializeDb(database)
+    def __init__(self):
+        self.table_name = ''
 
 
     @staticmethod
     def encode_auth_token(user_id):
         """ This method generates authentication token """
 
-        app, database = create_app()
+        app = create_app()
 
         try:
             payload = {
@@ -42,6 +39,7 @@ class BaseModel:
             return e
 
 
+    @staticmethod
     def blacklisted(self):
         pass
 
@@ -50,7 +48,7 @@ class BaseModel:
     def decode_auth_token(auth_token):
         """ This method takes in token and decodes it """
 
-        app, database = create_app()
+        app = create_app()
 
         try:
             payload = jwt.decode(auth_token, app.config.get('SECRET_KEY'))
@@ -65,7 +63,7 @@ class BaseModel:
         """ This method fetches all items """
         name = name if name else self.table_name
 
-        return self.database.fetch_all(
+        return self.fetch_all(
             "SELECT row_to_json({}) FROM {} WHERE {};".format(cols, name, condition)
         )
 
@@ -74,7 +72,7 @@ class BaseModel:
         """ This method fetches an item by name """
         name = name if name else self.table_name
         
-        return self.database.fetch_one(
+        return self.fetch_one(
             "SELECT {} FROM {} WHERE {}".format(column, name, condition)
         )
 
@@ -82,8 +80,10 @@ class BaseModel:
     def add_item(self, keys, values, name=''):
         """ This method adds an item """
         name = name if name else self.table_name
+        print(f"{keys}, --> {values}")
+        print(name, 'This is the name')
 
-        return self.database.execute(
+        return self.execute(
             "INSERT INTO {} ({}) VALUES {};".format(name, keys, values)
         )
 
@@ -92,7 +92,7 @@ class BaseModel:
         """ This method defines the delete item query """
         name = name if name else self.table_name
         
-        return self.database.update(
+        return self.update(
             "DELETE FROM {} WHERE {}".format(name, condition)
         )
 
@@ -101,7 +101,7 @@ class BaseModel:
         """ This method defines the update item query """
         name = name if name else self.table_name
 
-        return self.database.update(
+        return self.update(
             "UPDATE {} SET {} WHERE {}".format(name, updates, condition)
         )
 

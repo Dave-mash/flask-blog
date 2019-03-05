@@ -14,6 +14,7 @@ v1 = Blueprint('userv1', __name__, url_prefix='/api/v1/')
 """ This route fetches all users """
 @v1.route("/users", methods=['GET'])
 def get():
+
     users = User().fetch_all_users()
     users_list = []
 
@@ -26,13 +27,19 @@ def get():
     }), 200)
 
 
+
 """ This route allows unregistered users to sign up """
 @v1.route("/auth/signup", methods=['POST'])
 def registration():
     data = request.get_json()
+    # print('user views called')
 
     # Validate user
     validate_user = UserValidator(data)
+
+    if validate_user.signup_fields(data):
+        return make_response(jsonify(validate_user.signup_fields(data)), 400)
+    
     validation_methods = [
         validate_user.valid_email,
         validate_user.valid_name,
@@ -46,7 +53,7 @@ def registration():
                 "error": error(),
                 "status": 422
             }), 422)
-            
+
     # Register user
     user_data = {
         "first_name": data['first_name'],
@@ -58,6 +65,7 @@ def registration():
     }
 
     reg_user = User(user_data)
+
     if reg_user.save_user():
         return make_response(jsonify(reg_user.save_user()), 409)
     else:
@@ -96,6 +104,7 @@ def login():
     log_user = User().log_in_user(credentials)
 
     if isinstance(log_user, int):
+        User().connection.close()
         auth_token = User().encode_auth_token(log_user)
         return make_response(jsonify({
             "status": 201,

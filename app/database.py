@@ -4,19 +4,21 @@ import os
 class InitializeDb:
     """ This class sets up database connection and creates tables """
 
-    def __init__(self, url):
+    @classmethod
+    def __init__(cls, db_url):
         try:
-            self.connection = psycopg2.connect(url)
-            self.cursor = self.connection.cursor()
-            print(f'A connection to {url} database was established!')
+            cls.connection = psycopg2.connect(os.getenv(db_url))
+            cls.cursor = cls.connection.cursor()
+            print(f'A connection to {db_url} database was established!')
         except:
-            print('A problem occured while connecting to the database')
+            print(f'A problem occured while connecting to the {db_url}')
 
 
-    def create_tables(self):
+    @classmethod
+    def create_tables(cls):
         """ This method creates tables """
 
-        self.cursor.execute(
+        cls.cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS users (
                 id serial PRIMARY KEY NOT NULL,
@@ -48,43 +50,47 @@ class InitializeDb:
             """
         )
 
-        self.connection.commit()
+        cls.connection.commit()
 
     
-    def execute(self, query):
+    @classmethod
+    def execute(cls, query):
         """ This method saves values into the db """
-        
         print(query)
-        self.cursor.execute(query)
-        self.connection.commit()
+        cls.cursor.execute(query)
+        cls.connection.commit()
     
     
-    def fetch_all(self, query):
+    @classmethod
+    def fetch_all(cls, query):
         """ This method fetches all items """
         
-        self.cursor.execute(query)
-        return self.cursor.fetchall()
+        cls.cursor.execute(query)
+        return cls.cursor.fetchall()
     
     
-    def fetch_one(self, query):
+    @classmethod
+    def fetch_one(cls, query):
         """ This method fetches a single item """
         
-        self.cursor.execute(query)
-        return self.cursor.fetchone()
+        cls.cursor.execute(query)
+        return cls.cursor.fetchone()
     
     
-    def update(self, query):
+    @classmethod
+    def update(cls, query):
         """ This method executes update queries """
         print(query)
-        self.cursor.execute(query)
-        self.connection.commit()
+        cls.cursor.execute(query)
+        cls.connection.commit()
 
 
-    def drop_tables(self):
+    @classmethod
+    def drop_tables(cls):
         """ This method drops all tables """
         
-        self.cursor.execute("DROP TABLE IF EXISTS users, posts, comments CASCADE;")
-        self.connection.commit()
+        cls.cursor.execute("DROP TABLE IF EXISTS users, posts, comments CASCADE;")
+        cls.connection.commit()
 
 
 # TIME

@@ -11,7 +11,8 @@ class Comment(BaseModel):
     
     def __init__(self, comment={}, database=os.getenv('FLASK_DATABASE_URI')):
     
-        self.base_model = BaseModel('comments', database)
+        self.base_model = BaseModel()
+        self.base_model.table_name = 'comments'
 
         if comment:
             self.comment = comment['comment']

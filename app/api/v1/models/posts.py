@@ -6,13 +6,13 @@ import os
 from flask import jsonify
 
 from app.api.v1.models.base_model import BaseModel, AuthenticationRequired
-from app.api.v1.models.users import User
 
 class Post(BaseModel):
     
     def __init__(self, post={}, database=os.getenv('FLASK_DATABASE_URI')):
     
-        self.base_model = BaseModel('posts', database)
+        self.base_model = BaseModel()
+        self.base_model.table_name = 'posts'
     
         if post:
             self.title = post['title']

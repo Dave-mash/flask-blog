@@ -13,7 +13,8 @@ class User(BaseModel):
     
     def __init__(self, user={}):
 
-        self.base_model = BaseModel(table_name='users')
+        self.base_model = BaseModel()
+        self.base_model.table_name = 'users'
 
         if user:
             self.Fname = user['first_name']
@@ -39,6 +40,8 @@ class User(BaseModel):
 
         keys = ", ".join(user.keys())
         values = tuple(user.values())
+
+
         if self.fetch_specific_user('email', f"email = '{self.email}'"):
             return {
                 "error": "This email already exists try logging in!",
@@ -83,7 +86,7 @@ class User(BaseModel):
         
         if not user:
             return jsonify({
-                "error": "Details not found, please sign up!",
+                "error": "Details not found. Try signing up!",
                 "status": 401
             }), 401
         elif not check_password_hash(password[0], details['password']):
