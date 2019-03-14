@@ -80,11 +80,9 @@ class BaseModel(InitializeDb):
     def add_item(self, keys, values, name=''):
         """ This method adds an item """
         name = name if name else self.table_name
-        print(f"{keys}, --> {values}")
-        print(name, 'This is the name')
 
         return self.execute(
-            "INSERT INTO {} ({}) VALUES {};".format(name, keys, values)
+            "INSERT INTO {} ({}) VALUES {}".format(name, keys, values)
         )
 
 

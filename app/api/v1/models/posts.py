@@ -2,7 +2,7 @@
 This module sets up the posts model and all it's functionality
 """
 
-import os
+import os, json
 from flask import jsonify
 
 from app.api.v1.models.base_model import BaseModel, AuthenticationRequired
@@ -30,8 +30,14 @@ class Post(BaseModel):
 
         keys = ", ".join(post_item.keys())
         values = tuple(post_item.values())
-        self.base_model.add_item(keys, values)
-
+        if self.fetch_specific_post('title', f"title = '{self.title}'"):
+            return {
+                "error": "Please make your title unique",
+                "status": 409
+            }
+        else:
+            self.base_model.add_item(keys, values)
+    
 
     def fetch_posts(self, fields, condition, name=''):
         """ This method fetches all posts """
@@ -43,7 +49,17 @@ class Post(BaseModel):
         """ This method fetches a single post """
 
         return self.base_model.grab_items_by_name(column, condition)
-        
+
+
+    def fetch_post_id(self, title):
+        """ This method fetches a post id """
+    
+        try:
+            return self.fetch_specific_post('id', f"title = '{title}'")
+        except:
+            return False
+
+
     # Array --> [(['1', '1', '2'],)]
 
     def update_post(self, id, updates):

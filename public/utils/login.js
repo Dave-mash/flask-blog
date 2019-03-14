@@ -19,65 +19,67 @@ form.addEventListener('submit', (e) => {
     span.style.marginTop = '10px';
     span.style.textAlign = 'center';
 
-    const user = { email, password };
-    
+    const user = {
+        email,
+        password
+    };
+
     // highlights empty fields
-    
+
     fetch(loginUrl, {
-      method: 'POST',
-      body: JSON.stringify(user),
-      headers: {
-        'Content-Type': 'application/json'
-      }
+        method: 'POST',
+        body: JSON.stringify(user),
+        headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Credentials': true
+        }
     }).then(response => {
-        return response.json();          
-    }, networkError => console.log(networkError.message)
-      ).then(jsonResponse => {
-            console.log(jsonResponse)
+        return response.json();
+    }, networkError => console.log(networkError.message)).then(jsonResponse => {
+        console.log(jsonResponse)
+        span.innerHTML = '';
+        let emailInput = document.getElementById(`email`)
+        let passwordInput = document.getElementById(`password`)
+
+        if (!email) {
+            b.textContent = 'Email is required!'
+            b.style.color = 'red'
+            b.className = 'error_message'
+            span.appendChild(b)
+            emailInput.style.border = '1.8px solid red'
+        } else if (!password) {
+            b.textContent = 'Password is required!'
+            b.style.color = 'red'
+            b.className = 'error_message'
+            span.appendChild(b)
+            passwordInput.style.border = '1.8px solid red'
+        } else {
             span.innerHTML = '';
-            let emailInput = document.getElementById(`email`)
-            let passwordInput = document.getElementById(`password`)
-        
-            if (!email) {
-                b.textContent = 'Email is required!'
-                b.style.color = 'red'
-                b.className = 'error_message'
-                span.appendChild(b)
-                emailInput.style.border = '1.8px solid red'
-            } else if (!password) {
-                b.textContent = 'Password is required!'
-                b.style.color = 'red'
-                b.className = 'error_message'
-                span.appendChild(b)
-                passwordInput.style.border = '1.8px solid red'
+            passwordInput.style.border = 'none'
+            emailInput.style.border = 'none'
+        }
+
+        if (span.children.length == 0) {
+            console.log(jsonResponse)
+            if (jsonResponse.error) {
+                b.textContent = `${jsonResponse.error}`;
+                b.style.color = 'red';
+                b.className = 'error_message';
+                document.getElementById('error_span').appendChild(b);
             } else {
-                span.innerHTML = '';
-                passwordInput.style.border = 'none'
-                emailInput.style.border = 'none'
+                document.getElementById('error_span').innerHTML = ''
             }
-
-            if (span.children.length == 0) {
-
-                if (jsonResponse.error) {
-                    b.textContent = `${jsonResponse.error}`;
-                    b.style.color = 'red';
-                    b.className = 'error_message';
-                    document.getElementById('error_span').appendChild(b);
-                } else {
-                    document.getElementById('error_span').innerHTML = ''
-                }
             console.log(jsonResponse.error)
+        }
+        if (!jsonResponse.error) {
+            let details = {
+                id: jsonResponse.id,
+                auth_token: jsonResponse.auth_token,
+                username: jsonResponse.username,
+                timestamp: new Date().getHours()
             }
-            if (!jsonResponse.error) {
-                let details = {
-                    id: jsonResponse.id,
-                    auth_token: jsonResponse.auth_token,
-                    username: jsonResponse.username,
-                    timestamp: new Date().getHours()
-                }
-                localStorage.setItem(jsonResponse.username, JSON.stringify(details));
-                window.location.replace('http://127.0.0.1:3000/index.html?username=' + jsonResponse.username)
-            }
-      });
+            localStorage.setItem(jsonResponse.username, JSON.stringify(details));
+            window.location.replace('http://127.0.0.1:3000/index.html?username=' + jsonResponse.username)
+        }
+    });
 });
-

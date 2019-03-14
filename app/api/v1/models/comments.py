@@ -34,10 +34,10 @@ class Comment(BaseModel):
         self.base_model.add_item(keys, values)
 
 
-    def fetch_comments(self, fields):
+    def fetch_comments(self, fields, condition="True = True"):
         """ This method fetches all comments """
 
-        return self.base_model.grab_all_items(f'{fields}', "True = True")
+        return self.base_model.grab_all_items(f'{fields}', f'{condition}')
 
 
     def fetch_specific_comment(self, column, condition):

@@ -34,7 +34,7 @@ class InitializeDb:
                 id serial PRIMARY KEY NOT NULL,
                 author_id INT REFERENCES users(id)\
                 ON UPDATE CASCADE ON DELETE CASCADE,
-                title TEXT NOT NULL,
+                title TEXT UNIQUE NOT NULL,
                 body TEXT NOT NULL,
                 created_on TIMESTAMP DEFAULT current_timestamp
             );

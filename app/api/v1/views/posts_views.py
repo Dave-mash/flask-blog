@@ -66,17 +66,20 @@ def post(userId):
             try:
                 session.get(email[0])
                 post_model = Post(post)
-                post_model.save_post()
-
-                return make_response(jsonify({
-                    "status": 201,
-                    "message": "You have successfully posted a post",
-                    "data": [{
-                        "title": data['title'],
-                        "body": data['body'],
-                        "user": userId
-                    }]
-                }), 201)
+                if isinstance(post_model.save_post(), dict):
+                    return make_response(jsonify(post_model.save_post()))
+                else:
+                    post_model.save_post()
+                    return make_response(jsonify({
+                        "status": 201,
+                        "message": "You have successfully posted a post",
+                        "data": {
+                            "title": data['title'],
+                            "body": data['body'],
+                            "user": userId,
+                            "post_id": post_model.fetch_post_id(data['title'])[0],
+                        }
+                    }), 201)
             except:
                 return make_response(jsonify({
                     "error": "Please log in first!",

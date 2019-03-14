@@ -6,7 +6,8 @@ const append = (parent, children) => {
     })
 }
 
-// GET
+// GET blog posts
+
 fetch('http://127.0.0.1:5000/api/v1/posts')
     .then(res => {
             if (res.ok) {
@@ -24,23 +25,17 @@ fetch('http://127.0.0.1:5000/api/v1/posts')
             postTitle.style.cursor = 'pointer';
             postTitle.setAttribute('data-user-id', post['id'])
             let postBody = document.createElement('p');
-            let anchorTag = document.createElement('a');
-            anchorTag.setAttribute('href', 'post.html');
-            anchorTag.setAttribute('href', 'post.html');
-            anchorTag.id = 'topic_id';
+            postTitle.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('clicked')
+                window.location.replace('http://127.0.0.1:3000/comment.html?post=' + postTitle.textContent + '&body=' + postBody.textContent + '&id=' + post['id'])
+            })
+            postTitle.className = 'topic_id';
             let postTime = document.createElement('b');
             let br = document.createElement('br');
             let postForm = document.createElement('form');
-            // postForm.id = 'comment_form';
-            // let commentSubmit = document.createElement('button');
-            // commentSubmit.textContent = 'post';
-            // let postComment = document.createElement('textarea');
-            // append(postForm, [postComment, br, commentSubmit])
-            // postComment.id = 'comment_area';
-            // postComment.name = 'comment_area';
             postTime.innerHTML = post['createdAt'];
-            anchorTag.textContent = post['title'];
-            postTitle.appendChild(anchorTag);
+            postTitle.textContent = post['title'];
             postBody.innerHTML = post['body'];
             postDiv.id = 'post_item';
             append(postDiv, [postTitle, postBody, postTime, br, postForm])
@@ -54,7 +49,7 @@ fetch('http://127.0.0.1:5000/api/v1/posts')
 const form = document.getElementById('post_form');
 
 
-// POST
+// POST blog
 form.addEventListener('submit', (e) => {
     e.preventDefault();
 
@@ -71,25 +66,29 @@ form.addEventListener('submit', (e) => {
     let username = JSON.parse(localStorage.getItem(myParams)); // Local storage key
 
     // Send req
-    fetch(`http://127.0.0.1:5000/api/v1/${username.id}/posts`, {
-        method: 'POST',
-        body: JSON.stringify(post),
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${username.auth_token}`
-        }
-    }).then(res => {
-            return res.json()
-        },
-        networkError => console.log(networkError.message)
-    ).then(jsonResponse => {
-        let now = new Date().getHours();
-        let diff = now - username.timestamp;
-        if (diff >= 24) {
-            localStorage.removeItem(`${jsonResponse.email}`);
-            window.location.replace('http://127.0.0.1:3000/login.html');
-        } else {
-            console.log("It's not yet 24hrs")
-        }
-    });
+    if (username) {
+        fetch(`http://127.0.0.1:5000/api/v1/${username.id}/posts`, {
+            method: 'POST',
+            body: JSON.stringify(post),
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${username.auth_token}`
+            }
+        }).then(res => {
+                return res.json()
+            },
+            networkError => console.log(networkError.message)
+        ).then(jsonResponse => {
+            let now = new Date().getHours();
+            let diff = now - username.timestamp;
+            if (diff >= 24) {
+                localStorage.removeItem(`${jsonResponse.email}`);
+                window.location.replace('http://127.0.0.1:3000/login.html');
+            } else {
+                console.log('Not yet 24hrs')
+                console.log(jsonResponse)
+            }
+        });
+    }
+    
 });

@@ -15,6 +15,33 @@ from app.api.v1.models.users import User
 v1 = Blueprint('commentv1', __name__, url_prefix='/api/v1/')
 
 
+""" This route fetches a post's comments """
+@v1.route("<int:postId>/comments", methods=['GET'])
+def get_comments(postId):
+    
+    try:
+        comments = Comment().fetch_comments('(comment, post_id, user_id)', f'post_id = {postId}')
+        comments_list = []
+        for comment in comments:
+            obj = {
+                "comment": comment[0]['f1'],
+                "post_id": comment[0]['f2'],
+                "user_id": comment[0]['f3'],
+                "username": User().fetch_specific_user('username', f"id = {comment[0]['f3']}")[0]
+            }
+            comments_list.append(obj)
+
+        return make_response(jsonify({
+            "status": 200,
+            "comments": comments_list
+        }), 200)
+    except:
+        return make_response(jsonify({
+            "error": "Post not found or does not exist",
+            "status": 404
+        }), 404)
+
+
 """ This route posts a comment on a post """
 @v1.route("/<int:userId>/<int:postId>/comments", methods=['POST'])
 @AuthenticationRequired
@@ -57,6 +84,7 @@ def comment_on_post(postId, userId):
 
         comment_model = Comment(comment)
 
+        print('This ran')
         comment_model.save_comment()
         email = User().fetch_specific_user('email', f"id = {userId}")
 
