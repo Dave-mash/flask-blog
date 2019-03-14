@@ -1,2 +1,2 @@
 web: gunicorn app:app
-web npm install
+web: python run.py

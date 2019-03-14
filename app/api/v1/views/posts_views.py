@@ -3,7 +3,7 @@ This module sets up all the post endpoints
 Author: Dave
 """
 
-from flask import request, jsonify, make_response, Blueprint
+from flask import request, jsonify, make_response, Blueprint, session
 
 from app.api.v1.utils.posts_validator import PostValidator
 from app.api.v1.models.posts import Post, AuthenticationRequired
@@ -15,11 +15,17 @@ v1 = Blueprint('postv1', __name__, url_prefix='/api/v1/')
 """ This route fetches all posts """
 @v1.route("/posts", methods=['GET'])
 def get():
-    posts = Post().fetch_posts('(title, body, created_on)', 'True = True')
+    posts = Post().fetch_posts('(title, body, created_on, id)', 'True = True')
     posts_list = []
 
     for post in posts:
-        posts_list.append(post[0])
+        post_item = {
+            "title": post[0]['f1'],
+            "body": post[0]['f2'],
+            "createdAt": post[0]['f3'],
+            "id": post[0]['f4']
+        }
+        posts_list.append(post_item)
 
     return make_response(jsonify({
         "status": 200,
@@ -47,35 +53,40 @@ def post(userId):
                 return make_response(jsonify({
                     "error": error()
                 }), 422)
-            
-        user = User().fetch_specific_user('id', f"id = {userId}")
-
-        post = {
-            "author_id": userId,
-            "title": data['title'],
-            "body": data['body']
-        }
         
-        if user:
+        try:
+            email = User().fetch_specific_user('email', f"id = {userId}")
 
-            post_model = Post(post)
-            post_model.save_post()
+            post = {
+                "author_id": userId,
+                "title": data['title'],
+                "body": data['body']
+            }
+            
+            try:
+                session.get(email[0])
+                post_model = Post(post)
+                post_model.save_post()
 
+                return make_response(jsonify({
+                    "status": 201,
+                    "message": "You have successfully posted a post",
+                    "data": [{
+                        "title": data['title'],
+                        "body": data['body'],
+                        "user": userId
+                    }]
+                }), 201)
+            except:
+                return make_response(jsonify({
+                    "error": "Please log in first!",
+                    "status": 403
+                }), 403)
+        except:
             return make_response(jsonify({
-                "status": 201,
-                "message": "You have successfully posted a post",
-                "data": [{
-                    "title": data['title'],
-                    "body": data['body'],
-                    "user": userId
-                }]
-            }), 201)
-        else:
-            return make_response(jsonify({
-                "error": "Please create an account first!",
-                "status": 403
-            }), 403)
-
+                "error": "user not found or does not exist!",
+                "status": 404
+            }), 404)
 
 """ This route updates a post """
 @v1.route("/<int:userId>/posts/<int:postId>", methods=['PUT'])
@@ -101,14 +112,21 @@ def edit_post(postId, userId):
     if Post().fetch_specific_post('author_id', f"id = {postId}")[0] == userId:
 
         post = Post().update_post(postId, data)
+        email = User().fetch_specific_user('email', f"id = {userId}")
 
         if isinstance(post, dict):
             return make_response(post)
         else:
-            return make_response(jsonify({
-                "message": "You have successfully updated this post",
-                "status": 200
-            }), 200)
+            if session.get(email[0]):
+                return make_response(jsonify({
+                    "message": "You have successfully updated this post",
+                    "status": 200
+                }), 200)
+            else:
+                return make_response(jsonify({
+                    "error": 'Please log in first',
+                    "status": 403
+                }), 403)
     else:
         return make_response(jsonify({
             "error": "You are not authorized to perform this action!",
@@ -121,19 +139,34 @@ def edit_post(postId, userId):
 @AuthenticationRequired
 def delete_post(postId, userId):
 
-    if Post().fetch_specific_post('author_id', f"id = {postId}")[0] == userId:
-        
-        post = Post().delete_post(postId)
+    try:
+        if Post().fetch_specific_post('author_id', f"id = {postId}")[0] == userId:
+            
+            post = Post().delete_post(postId)
+            email = User().fetch_specific_user('email', f"id = {userId}")
 
-        if isinstance(post, dict):
-            return make_response(jsonify(post), 404)
+            if isinstance(post, dict):
+                return make_response(jsonify(post), 404)
+            else:
+                print(session.get(email[0]))
+                if session.get(email[0]):
+                    return make_response(jsonify({
+                        "error": 'post was deleted successfully',
+                        "status": 200
+                    }), 200)
+                else:
+                    return make_response(jsonify({
+                        "error": 'Please log in first',
+                        "status": 403
+                    }), 403)
+
         else:
             return make_response(jsonify({
-                "error": 'post was deleted successfully',
-                "status": 200
-            }), 200)
-    else:
+                "error": "You are not authorized to perform this action!",
+                "status": 401
+            }), 401)
+    except:
         return make_response(jsonify({
-            "error": "You are not authorized to perform this action!",
-            "status": 401
-        }), 401)
+            "error": "User not found or does not exist",
+            "status": 404
+        }), 404)

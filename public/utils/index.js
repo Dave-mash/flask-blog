@@ -1,5 +1,7 @@
-var socket = io();
-socket.on('connect', function() {
+
+const socket = io();
+
+socket.on('connect', () => {
     console.log('connected to server!')
     // socket.emit('createMessage', {
     //     from: 'Dave',
@@ -7,10 +9,10 @@ socket.on('connect', function() {
     // });
 });
 
-socket.on('disconnect', function() {
+socket.on('disconnect', () => {
     console.log('Disconnected from server!')
 });
 
-socket.on('newMessage', function(message) {
+socket.on('newMessage', (message) => {
     console.log('New Message', message);
 });

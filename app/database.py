@@ -27,7 +27,7 @@ class InitializeDb:
                 email TEXT UNIQUE NOT NULL,
                 username TEXT UNIQUE NOT NULL,
                 password TEXT NOT NULL,
-                image VARCHAR [],
+                image VARCHAR NOT NULL,
                 date_registered TIMESTAMP DEFAULT current_timestamp
             );
             CREATE TABLE IF NOT EXISTS posts(

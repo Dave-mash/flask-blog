@@ -5,7 +5,7 @@ Author: Dave
 
 
 from flask import Blueprint
-from flask import request, jsonify, make_response, Blueprint
+from flask import request, jsonify, make_response, Blueprint, session
 
 from app.api.v1.models.posts import Post
 from app.api.v1.utils.comments_validator import CommentsValidator
@@ -58,15 +58,23 @@ def comment_on_post(postId, userId):
         comment_model = Comment(comment)
 
         comment_model.save_comment()
-    
-        return make_response(jsonify({
-            "status": 201,
-            "message": "You have successfully commented on this post",
-            "data": [{
-                "post": postId,
-                "comment": comment['comment']
-            }]
-        }), 201)
+        email = User().fetch_specific_user('email', f"id = {userId}")
+
+        if session.get(email[0]):
+            return make_response(jsonify({
+                "status": 201,
+                "message": "You have successfully commented on this post",
+                "data": [{
+                    "post": postId,
+                    "comment": comment['comment']
+                }]
+            }), 201)
+        else:
+            return make_response(jsonify({
+                "error": 'Please log in first',
+                "status": 403
+            }), 403)
+
     elif not user:
         return make_response(jsonify({
             "error": "User not found or does not exist",
@@ -96,10 +104,18 @@ def edit_comment(userId, commentId):
             if isinstance(comment, dict):
                 return make_response(comment, 404)
             else:
-                return make_response(jsonify({
-                    "message": "You have successfully updated this comment",
-                    "status": 200
-                }), 200)
+                email = User().fetch_specific_user('email', f"id = {userId}")
+
+                if session.get(email[0]):
+                    return make_response(jsonify({
+                        "message": "You have successfully updated this comment",
+                        "status": 200
+                    }), 200)
+                else:
+                    return make_response(jsonify({
+                        "error": 'Please log in first',
+                        "status": 403
+                    }), 403)
         else:
             return make_response(jsonify({
                 "error": "You are not authorized to perform this action!",
@@ -125,10 +141,18 @@ def delete_comment(userId, commentId):
             if isinstance(comment, dict):
                 return make_response(jsonify(comment), 404)
             else:
-                return make_response(jsonify({
-                    "error": 'comment was deleted successfully',
-                    "status": 200
-                }), 200)
+                email = User().fetch_specific_user('email', f"id = {userId}")
+
+                if session.get(email[0]):
+                    return make_response(jsonify({
+                        "error": 'comment was deleted successfully',
+                        "status": 200
+                    }), 200)
+                else:
+                    return make_response(jsonify({
+                        "error": 'Please log in first',
+                        "status": 403
+                }), 403)
         else:
             return make_response(jsonify({
                 "error": "You are not authorized to perform this action!",

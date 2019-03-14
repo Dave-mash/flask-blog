@@ -6,7 +6,7 @@ import os
 import jwt
 import datetime
 from functools import wraps, update_wrapper
-from flask import jsonify, request
+from flask import jsonify, request, session
 
 from app import create_app, db_url
 from app.database import InitializeDb

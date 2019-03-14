@@ -42,7 +42,7 @@ class UserValidator:
 
     def signup_fields(self, data):
 
-        fields = ['first_name', 'last_name', 'email', 'username', 'password', 'image', 'confirm_password']
+        fields = ['first_name', 'last_name', 'email', 'username', 'password', 'confirm_password']
 
         return self.check_fields(data, fields)
 

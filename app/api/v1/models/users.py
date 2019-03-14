@@ -22,7 +22,6 @@ class User(BaseModel):
             self.email = user['email']
             self.username = user['username']
             self.password = generate_password_hash(user['password'])
-            self.image = user['image'] if user['image'] else '{user.png}'
             self.isAdmin = False
       
       
@@ -35,7 +34,7 @@ class User(BaseModel):
             email=self.email,
             username=self.username,
             password=self.password,
-            image=self.image
+            image='user.png'
         )
 
         keys = ", ".join(user.keys())

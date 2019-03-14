@@ -1,14 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <title>Flask Blog</title>
 </head>
+
 <body>
-    <h1>This is my index file</h1>
+    <header>
+        <h2><a href="index.html">HOME</a></h2>
+        <h2><a href="#">PROFILE</a></h2>
+        <h2><a href="signup.html">Signup /</a><a href="login.html"> Login</a></h2>
+    </header>
+    <div class="container">
+        <div class="post_container"></div>
+        <form id="post_form">
+            <input type="text" name="title" id="post_title"><br />
+            <textarea name="textarea" id="post_body" cols="25" rows="8"></textarea>
+            <button>Post</button>
+        </form>
+    </div>
+
     <script src="/socket.io/socket.io.js"></script>
-    <script src="/js/index.js"></script>
+    <script src="./utils/index.js"></script>
+    <script src="./utils/blog.js"></script>
+    <script src="./utils/post.js"></script>
 </body>
+
 </html>
