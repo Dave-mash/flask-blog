@@ -88,7 +88,8 @@ def comment_on_post(postId, userId):
         comment_model.save_comment()
         email = User().fetch_specific_user('email', f"id = {userId}")
 
-        if session.get(email[0]):
+        try:
+            session.get(email[0])
             return make_response(jsonify({
                 "status": 201,
                 "message": "You have successfully commented on this post",
@@ -97,7 +98,7 @@ def comment_on_post(postId, userId):
                     "comment": comment['comment']
                 }]
             }), 201)
-        else:
+        except:
             return make_response(jsonify({
                 "error": 'Please log in first',
                 "status": 403

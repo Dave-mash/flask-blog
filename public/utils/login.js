@@ -79,7 +79,12 @@ form.addEventListener('submit', (e) => {
                 timestamp: new Date().getHours()
             }
             localStorage.setItem(jsonResponse.username, JSON.stringify(details));
-            window.location.replace('http://127.0.0.1:3000/index.html?username=' + jsonResponse.username)
-        }
+            if (document.referrer !== 'http://127.0.0.1:3000/login.html' && document.referrer.includes('username') === false) {
+                let userQuery = window.location.search ? '&username=' : '?username='
+                window.location.replace(document.referrer + userQuery + jsonResponse.username)
+            } else {
+                window.location.replace('http://127.0.0.1:3000/index.html?username=' + jsonResponse.username);
+            }
+    }
     });
 });

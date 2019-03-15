@@ -1,10 +1,10 @@
-const urlParams = new URLSearchParams(window.location.search);
-const post = urlParams.get('post');
-const bodyText = urlParams.get('body');
-const id = urlParams.get('id')
+let commentParams = new URLSearchParams(window.location.search);
+const post = commentParams.get('post');
+const bodyText = commentParams.get('body');
+const id = commentParams.get('id')
+console.log(post)
 
 if (post) {
-    console.log(post)
 
     fetch(`http://127.0.0.1:5000/api/v1/${id}/comments`)
         .then(res => {
@@ -40,27 +40,47 @@ if (post) {
 console.log('running comment.js')
 
 
-const form = document.getElementById('comment_form');
-
-form.addEventListener('submit', (e) => {
+const commentForm = document.getElementById('comment_form');
+console.log(commentForm)
+commentForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
-    const formData = new FormData(form);
-    const comment = formData.get('comment');
-    const username = urlParams.get('username');
+    const formData = new FormData(commentForm);
+    const comment = {
+        "comment": formData.get('comment')
+    };
+    const commentUrl = window.location.href; // url
 
-    if (username) {
-        let details = JSON.parse(localStorage.getItem(username)); // Local storage key
+    if (commentUrl.includes('username')) {
+        const params = new URLSearchParams(window.location.search);
+        let username = params.get('username')
+        let user = JSON.parse(localStorage.getItem(username)); // Local storage key
 
-        fetch(`http://127.0.0.1:5000/api/v1/${details.id}/${id}/comments`, {
+        fetch(`http://127.0.0.1:5000/api/v1/${user.id}/${id}/comments`, {
             method: 'POST',
-            body: JSON.stringify(user),
+            body: JSON.stringify(comment),
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${user.auth_token}`,
                 'Access-Control-Allow-Credentials': true
             }
-        }).then()
-        .then();
+        }).then(res => {
+                return res.json()
+            },
+            networkError => console.log(networkError.message)
+        ).then(jsonResponse => {
+            let now = new Date().getHours();
+            let diff = now - user.timestamp;
+            if (diff >= 24) {
+                localStorage.removeItem(`${jsonResponse.email}`);
+                window.location.href('http://127.0.0.1:3000/login.html');
+            } else {
+                console.log('Token is valid!')
+                console.log(jsonResponse)
+            }
+        });
+    } else {
+        window.location.href = "http://127.0.0.1:3000/login.html"
     }
 });
 

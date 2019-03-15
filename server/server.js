@@ -11,8 +11,8 @@ const server = http.createServer(app);
 const io = socketIO(server);
 
 const publicPath = path.join(__dirname, '../public');
-const port = process.env.PORT || 3000;
-
+const port = 3000;
+// process.env.PORT || 
 app.use(express.static(publicPath))
 
 /* io.emit works with every connection whereas 
