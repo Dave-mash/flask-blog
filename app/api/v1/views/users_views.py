@@ -7,7 +7,7 @@ from flask import request, jsonify, make_response, Blueprint, session
 
 from app.api.v1.models.users import User, AuthenticationRequired
 from app.api.v1.utils.users_validator import UserValidator
-# from ....public import 
+from app.api.v1.models.posts import Post
 
 v1 = Blueprint('userv1', __name__, url_prefix='/api/v1/')
 
@@ -110,6 +110,7 @@ def login():
             "email": credentials['email']
         }
         session[f"{store['email']}"] = store
+        print(session.get(store['email']))
         return make_response(jsonify({
             "status": 201,
             "message": "{} has been successfully logged in".format(data['email']),
@@ -122,11 +123,12 @@ def login():
 
             
 """ This route allows registered users to log out """
-@v1.route("/auth/<int:userId>/logout", methods=['POST'])
+@v1.route("/auth/<int:userId>/logout", methods=['GET'])
 @AuthenticationRequired
 def logout(userId):
     # remove the user from the session
-    print(User().fetch_specific_user('email', f"id = '{userId}'"))
+    print(session.get(User().fetch_specific_user('email', f"id = '{userId}'")[0]))
+
     try:
         email = User().fetch_specific_user('email', f"id = '{userId}'")
         if session.get(email[0]) != None:
@@ -168,9 +170,9 @@ def del_account(userId):
 @v1.route("/profile/<int:userId>", methods=['PUT', 'GET'])
 @AuthenticationRequired
 def update_account(userId):
-    data = request.get_json()
 
-    if request.method == 'POST':
+    if request.method == 'PUT':
+        data = request.get_json()
         if UserValidator().signup_fields(data):
             return make_response(jsonify(UserValidator().signup_fields(data)), 400)
         else:
@@ -208,4 +210,24 @@ def update_account(userId):
                 "message": f"user {user_data['email']} updated successfully"
             }))
     elif request.method == 'GET':
-        pass
+        user = User().grab_all_items('(username, image)', f"id = {userId}", 'users')
+        posts = Post().fetch_posts('(title, created_on, id)', f'author_id = {userId}')
+        posts_list = []
+
+        for post in posts:
+            post_item = {
+                "title": post[0]['f1'],
+                "createdAt": post[0]['f2'],
+                "id": post[0]['f3']
+            }
+            posts_list.append(post_item)
+
+        if user:
+            user_dict = {
+                "username": user[0][0]['f1'],
+                "image": user[0][0]['f2']
+            }
+            return make_response(jsonify({
+                "user": user_dict,
+                "posts": posts_list
+            }), 200)
