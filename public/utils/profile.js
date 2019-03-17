@@ -17,13 +17,11 @@ fetch(`http://127.0.0.1:5000/api/v1/profile/${store.id}`, {
     ).then(jsonResponse => {
         let h3 = document.createElement('h3');
         h3.textContent = jsonResponse.user.username;
-        let home = document.createElement('h3');
-        home.textContent = 'home';
+        let home = document.getElementById('home_id');
         home.style.cursor = 'pointer';
         home.addEventListener('click', () => {
             window.location.href = `http://127.0.0.1:3000/index.html?username=` + username;
         });
-        userDetails.appendChild(home);
         userDetails.appendChild(h3);
         let image = document.createElement('img');
         image.style.width = '100px';

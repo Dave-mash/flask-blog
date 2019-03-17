@@ -1,4 +1,3 @@
-// import b from '../public/utils/blog';
 // import { title, body } from '../public/utils/blog';
 
 const path = require('path');
@@ -11,8 +10,8 @@ const server = http.createServer(app);
 const io = socketIO(server);
 
 const publicPath = path.join(__dirname, '../public');
-const port = 3000;
-// process.env.PORT || 
+const port = process.env.PORT || 3000;
+
 app.use(express.static(publicPath))
 
 /* io.emit works with every connection whereas 
@@ -25,18 +24,13 @@ io.on('connection', (socket) => {
         console.log('Disconnected from server!')
     });
 
-    socket.on('viewPosts', (post) => {
-        console.log('viewPosts', post)
-        io.emit('newPost', {
-            from: message.from,
-            text: message.text,
-            createdAt: new Date().getTime()
-        });
+    socket.on('createPost', (post) => {
+        console.log('createPost: ', post)
+        io.emit('newPost', post);
     });
 });
 
 server.listen(port, () => {
     console.log(`Server is up on port: ${port}`)
-    // console.log(title)
     // console.log(body)
 });

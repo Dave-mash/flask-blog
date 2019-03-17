@@ -114,12 +114,14 @@ class AuthenticationRequired:
     def __call__(self, *args, **kwargs):
         auth_header = request.headers.get('Authorization')
 
+        print(session)
+
         if not auth_header or len(auth_header) < 8 or " " not in auth_header:
             return jsonify({ "error": "Please log in first!" }), 403
 
         auth_token = auth_header.split(" ")[1]
 
         if isinstance(BaseModel().decode_auth_token(auth_token), str):
-            return jsonify({ "error": BaseModel().decode_auth_token(auth_token) })
+            return jsonify({ "error": BaseModel().decode_auth_token(auth_token) }), 401
         
         return self.f(*args, **kwargs)

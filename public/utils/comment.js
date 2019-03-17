@@ -18,6 +18,17 @@ if (post) {
             title.textContent = post;
             body.textContent = bodyText;
 
+            let home = document.getElementById('home_id');
+            home.style.cursor = 'pointer';
+            home.addEventListener('click', () => {
+                if (window.location.href.includes('username')) {
+                    const username = commentParams.get('username');
+                    window.location.href = `http://127.0.0.1:3000/index.html?username=` + username;
+                } else {
+                    window.location.href = `http://127.0.0.1:3000/index.html`;                    
+                }
+            });
+
             let commentDiv = document.querySelector('.comments_list');
 
             if (jsonResponse.comments) {

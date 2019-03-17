@@ -77,6 +77,12 @@ def registration():
             "auth_token": auth_token.decode('utf-8')
         }), 201)        
             
+
+
+######################################################################################################
+
+# The log in and log out routes need a little refactoring
+
 """ This route allows registered users to log in """
 @v1.route("/auth/login", methods=['POST'])
 def login():
@@ -109,6 +115,7 @@ def login():
             "token": auth_token.decode('utf-8'),
             "email": credentials['email']
         }
+        session.permanent = True
         session[f"{store['email']}"] = store
         print(session.get(store['email']))
         return make_response(jsonify({
@@ -126,6 +133,8 @@ def login():
 @v1.route("/auth/<int:userId>/logout", methods=['GET'])
 @AuthenticationRequired
 def logout(userId):
+    session.permanent = True
+    print(session.permanent)
     # remove the user from the session
     print(session.get(User().fetch_specific_user('email', f"id = '{userId}'")[0]))
 
@@ -147,7 +156,7 @@ def logout(userId):
             "error": "user not found or does not exist",
             "status": 400
         }), 400)
-
+######################################################################################################
 
 """ This route allows a user to delete their account """
 @v1.route("/profile/<int:userId>", methods=['DELETE'])
