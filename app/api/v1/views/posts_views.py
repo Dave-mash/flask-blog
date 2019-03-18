@@ -15,15 +15,17 @@ v1 = Blueprint('postv1', __name__, url_prefix='/api/v1/')
 """ This route fetches all posts """
 @v1.route("/posts", methods=['GET'])
 def get():
-    posts = Post().fetch_posts('(title, body, created_on, id)', 'True = True')
+    posts = Post().fetch_posts('(title, body, created_on, id, author_id)', 'True = True')
     posts_list = []
 
     for post in posts:
+        username = User().fetch_specific_user('username', f"id = {post[0]['f5']}")[0]
         post_item = {
             "title": post[0]['f1'],
             "body": post[0]['f2'],
-            "createdAt": post[0]['f3'],
-            "id": post[0]['f4']
+            "createdOn": post[0]['f3'],
+            "id": post[0]['f4'],
+            "author": username
         }
         posts_list.append(post_item)
 
@@ -152,16 +154,16 @@ def delete_post(postId, userId):
                 return make_response(jsonify(post), 404)
             else:
                 print(session.get(email[0]))
-                if session.get(email[0]):
-                    return make_response(jsonify({
-                        "error": 'post was deleted successfully',
-                        "status": 200
-                    }), 200)
-                else:
-                    return make_response(jsonify({
-                        "error": 'Please log in first',
-                        "status": 403
-                    }), 403)
+                # if session.get(email[0]):
+                return make_response(jsonify({
+                    "error": 'post was deleted successfully',
+                    "status": 200
+                }), 200)
+                # else:
+                #     return make_response(jsonify({
+                #         "error": 'Please log in first',
+                #         "status": 403
+                #     }), 403)
 
         else:
             return make_response(jsonify({
@@ -170,6 +172,6 @@ def delete_post(postId, userId):
             }), 401)
     except:
         return make_response(jsonify({
-            "error": "User not found or does not exist",
+            "error": "Post not found or does not exist",
             "status": 404
         }), 404)

@@ -8,6 +8,7 @@ from flask import request, jsonify, make_response, Blueprint, session
 from app.api.v1.models.users import User, AuthenticationRequired
 from app.api.v1.utils.users_validator import UserValidator
 from app.api.v1.models.posts import Post
+from app.api.v1.models.comments import Comment
 
 v1 = Blueprint('userv1', __name__, url_prefix='/api/v1/')
 
@@ -216,22 +217,28 @@ def update_account(userId):
             return make_response(jsonify(update_user))
         else:
             return make_response(jsonify({
-                "message": f"user {user_data['email']} updated successfully"
-            }))
+                "message": f"user {user_data['email']} updated successfully",
+                "status": 200
+            }), 200)
     elif request.method == 'GET':
         user = User().grab_all_items('(username, image)', f"id = {userId}", 'users')
-        posts = Post().fetch_posts('(title, created_on, id)', f'author_id = {userId}')
-        posts_list = []
-
-        for post in posts:
-            post_item = {
-                "title": post[0]['f1'],
-                "createdAt": post[0]['f2'],
-                "id": post[0]['f3']
-            }
-            posts_list.append(post_item)
-
         if user:
+            posts = Post().fetch_posts('(title, created_on, id)', f'author_id = {userId}')
+            comments = Comment().fetch_comments('(comment, created_on, id)', f'user_id = {userId}')
+            posts_list = []
+            comments_list = []
+
+            def loop(items, name):
+                for item in items:
+                    item_result = {
+                        name: item[0]['f1'],
+                        "createdAt": item[0]['f2'],
+                        "id": item[0]['f3']
+                    }
+                    posts_list.append(item_result) if name == 'title' else comments_list.append(item_result)
+
+            loop(posts, 'title')
+
             user_dict = {
                 "username": user[0][0]['f1'],
                 "image": user[0][0]['f2']
@@ -240,3 +247,8 @@ def update_account(userId):
                 "user": user_dict,
                 "posts": posts_list
             }), 200)
+        else:
+            return make_response(jsonify({
+                "message": "user not found",
+                "status": 404
+            }), 404)

@@ -1,12 +1,31 @@
 let commentParams = new URLSearchParams(window.location.search);
 const post = commentParams.get('post');
 const bodyText = commentParams.get('body');
-const id = commentParams.get('id')
-
+const username = commentParams.get('username');
+const id = JSON.parse(localStorage.getItem(username)).post;
+const socket = io();
+console.log(id)
 console.log(post)
 
-if (post) {
+const commentHandler = (comment) => {
+    let contentDiv = document.createElement('div');
+    contentDiv.className = 'comment_item';
+    let b = document.createElement('b');
+    b.textContent = comment.username;
+    let p = document.createElement('p');
+    p.className = 'comment_text';
+    p.textContent = comment.comment;
+    contentDiv.appendChild(b)
+    contentDiv.appendChild(p)
+    commentDiv.appendChild(contentDiv)
+}
 
+socket.on('newComment', (comment) => {
+    commentHandler(comment);
+    console.log('New comment!', comment)
+});
+
+if (post) {
     fetch(`http://127.0.0.1:5000/api/v1/${id}/comments`)
         .then(res => {
                 return res.json();
@@ -25,7 +44,7 @@ if (post) {
                     const username = commentParams.get('username');
                     window.location.href = `http://127.0.0.1:3000/index.html?username=` + username;
                 } else {
-                    window.location.href = `http://127.0.0.1:3000/index.html`;                    
+                    window.location.href = `http://127.0.0.1:3000/index.html`;
                 }
             });
 
@@ -33,27 +52,16 @@ if (post) {
 
             if (jsonResponse.comments) {
                 jsonResponse.comments.forEach(comment => {
-                    let contentDiv = document.createElement('div');
-                    contentDiv.className = 'comment_item';
-                    let b = document.createElement('b');
-                    b.textContent = comment.username;
-                    let p = document.createElement('p');
-                    p.className = 'comment_text';
-                    p.textContent = comment.comment;
-                    contentDiv.appendChild(b)
-                    contentDiv.appendChild(p)
-                    commentDiv.appendChild(contentDiv)
+                    commentHandler(comment)
                 });
             }
             console.log(jsonResponse)
         });
 }
 
-console.log('running comment.js')
-
 
 const commentForm = document.getElementById('comment_form');
-console.log(commentForm)
+
 commentForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
@@ -76,6 +84,7 @@ commentForm.addEventListener('submit', (e) => {
 
             fetch(`http://127.0.0.1:5000/api/v1/${user.id}/${id}/comments`, {
                 method: 'POST',
+                mode: 'cors',
                 body: JSON.stringify(comment),
                 headers: {
                     'Content-Type': 'application/json',
@@ -88,6 +97,7 @@ commentForm.addEventListener('submit', (e) => {
                 networkError => console.log(networkError.message)
             ).then(jsonResponse => {
                 let now = new Date().getHours();
+                socket.emit('createComment', comment)
                 let diff = now - user.timestamp;
                 if (diff >= 24) {
                     localStorage.removeItem(`${jsonResponse.email}`);
@@ -102,7 +112,7 @@ commentForm.addEventListener('submit', (e) => {
         }
     } else {
         let b = document.createElement('b');
-    
+
         b.textContent = 'Please add a comment!'
         b.style.color = 'red';
         span.innerHTML = '';

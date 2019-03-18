@@ -27,6 +27,7 @@ form.addEventListener('submit', (e) => {
     // highlights empty fields
 
     fetch(loginUrl, {
+        mode: 'cors',
         method: 'POST',
         body: JSON.stringify(user),
         headers: {
@@ -79,11 +80,10 @@ form.addEventListener('submit', (e) => {
                 timestamp: new Date().getHours()
             }
             localStorage.setItem(jsonResponse.username, JSON.stringify(details));
-            if (document.referrer !== 'http://127.0.0.1:3000/login.html' && document.referrer.includes('username') === false) {
-                let userQuery = window.location.search ? '&username=' : '?username='
-                window.location.replace(document.referrer + userQuery + jsonResponse.username)
+            if (!document.referrer.includes('username')) {
+                window.location.replace('http://127.0.0.1:3000/index.html?username=' + jsonResponse.username)
             } else {
-                window.location.replace('http://127.0.0.1:3000/index.html?username=' + jsonResponse.username);
+                console.log(window.location.href);
             }
     }
     });

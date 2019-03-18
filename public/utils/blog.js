@@ -11,46 +11,53 @@ const postsHandler = (post) => {
     let postDiv = document.createElement('div');
     let postTitle = document.createElement('h3');
     postTitle.style.cursor = 'pointer';
-    postTitle.setAttribute('data-post-id', post['id'])
     let postBody = document.createElement('p');
-    postTitle.addEventListener('click', (e) => {
-        e.preventDefault();
+    let title = document.createElement('b');
+    title.textContent = post['title'];
+    let author = document.createElement('i');
+    author.textContent = post['author'] + ': ';
+    author.style.color = 'blue';
+    console.log(title)
+    postTitle.className = 'topic_id';
+    postTitle.appendChild(author);
+    postTitle.appendChild(title);
+    let postTime = document.createElement('b');
+    let span = document.createElement('span');
+    let b = document.createElement('b');
+    b.textContent = post.author
+    span.appendChild(postTitle);
+    span.appendChild(b);
+    let br = document.createElement('br');
+    postTime.textContent = new Date(post.createdOn).toString().split(' G')[0];
+    postBody.textContent = post['body'];
+    postDiv.id = 'post_item';
+    append(postDiv, [postTitle, postBody, postTime, br])
+    mainDiv.insertBefore(postDiv, mainDiv.childNodes[0]);
+    title.addEventListener('click', (e) => {
         console.log('clicked')
         let urlSearch = new URLSearchParams(window.location.search);
         let username = urlSearch.get('username');
         if (username) {
-            window.location.href = 'http://127.0.0.1:3000/comment.html' + '?username=' + username + '&post=' + postTitle.textContent + '&body=' + postBody.textContent + '&id=' + post['id']
+            let user = JSON.parse(localStorage.getItem(username));
+            user['post'] = post['id'];
+            // user['post'][postTitle.textContent] = ;
+            localStorage.setItem(username, JSON.stringify(user));
+            window.location.href = 'http://127.0.0.1:3000/comment.html' + '?username=' + username + '&post=' + title.textContent + '&body=' + postBody.textContent;
         } else {
-            window.location.href = 'http://127.0.0.1:3000/comment.html' + '?post=' + postTitle.textContent + '&body=' + postBody.textContent + '&id=' + post['id']
+            window.location.href = 'http://127.0.0.1:3000/comment.html' + '?post=' + title.textContent + '&body=' + postBody.textContent + '&id=' + post['id']
         }
     });
-    postTitle.className = 'topic_id';
-    let postTime = document.createElement('b');
-    let br = document.createElement('br');
-    let postForm = document.createElement('form');
-    postTime.innerHTML = post['createdAt'];
-    postTitle.textContent = post['title'];
-    postBody.innerHTML = post['body'];
-    postDiv.id = 'post_item';
-    append(postDiv, [postTitle, postBody, postTime, br, postForm])
-    mainDiv.appendChild(postDiv);
-    console.log(mainDiv)
 }
 
 socket.on('disconnect', () => {
-    console.log('Message from blog.js: Disconnected from server!')
+    console.log('Disconnected from server!')
 });
 
 // Incoming posts
 
 socket.on('newPost', (post) => {
-    let newPost = {
-        title: post.title,
-        body: post.body,
-        createdAt: new Date().getTime()
-    }
-    postsHandler(newPost);
-    console.log('New post!', newPost)
+    postsHandler(post);
+    console.log('New post!', post)
 });
 
 // GET blog posts
@@ -67,7 +74,6 @@ fetch('http://127.0.0.1:5000/api/v1/posts')
         let a = document.getElementById('log_state');
         a.textContent = window.location.search ? 'logout' : 'login';
         a.style.cursor = 'pointer';
-        jsonResponse['posts'].reverse();
         mainDiv.innerHTML = '';
         jsonResponse['posts'].forEach(post => {
             postsHandler(post);
@@ -142,7 +148,7 @@ const form = document.getElementById('post_form');
 
 
 socket.on('connect', () => {
-    console.log('Message from blog.js: connected to Node server!')
+    console.log('Blog page connected to Node server!')
     
     // POST blog
     form.addEventListener('submit', (e) => {
@@ -156,16 +162,19 @@ socket.on('connect', () => {
         if (title && body) {
 
             span.innerHTML = ''
-            let post = {
-                title,
-                body
-            }
-            // formData.clear()
             /* grabbing items from the url */
 
             let urlParams = new URLSearchParams(window.location.search);
             let myParams = urlParams.get('username');
             let username = JSON.parse(localStorage.getItem(myParams)); // Local storage key
+
+            let post = {
+                author: myParams,
+                title,
+                body,
+                createdOn: new Date().toString().split(' G')[0]
+            }
+            form.reset()
 
             // Send req
             if (username) {
